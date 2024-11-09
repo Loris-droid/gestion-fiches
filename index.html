@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Fiches de Révision</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .fiche { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .fiche h3 { margin: 0; }
+    </style>
+</head>
+<body>
+    <h1>Fiches de Révision</h1>
+
+    <div id="fiches"></div>
+
+    <h2>Ajouter une Fiche</h2>
+    <input type="text" id="titre" placeholder="Titre de la fiche" /><br><br>
+    <textarea id="contenu" rows="4" placeholder="Contenu de la fiche"></textarea><br><br>
+    <button onclick="ajouterFiche()">Ajouter</button>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:5000';
+
+        async function chargerFiches() {
+            const response = await fetch(`${apiUrl}/fiches`);
+            const fiches = await response.json();
+            const fichesDiv = document.getElementById('fiches');
+            fichesDiv.innerHTML = '';
+            fiches.forEach(fiche => {
+                fichesDiv.innerHTML += `
+                    <div class="fiche">
+                        <h3>${fiche.titre}</h3>
+                        <p>${fiche.contenu}</p>
+                        <button onclick="supprimerFiche(${fiche.id})">Supprimer</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function ajouterFiche() {
+            const titre = document.getElementById('titre').value;
+            const contenu = document.getElementById('contenu').value;
+
+            const response = await fetch(`${apiUrl}/fiches`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titre, contenu })
+            });
+
+            if (response.ok) {
+                document.getElementById('titre').value = '';
+                document.getElementById('contenu').value = '';
+                chargerFiches();
+            }
+        }
+
+        async function supprimerFiche(id) {
+            const response = await fetch(`${apiUrl}/fiches/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                chargerFiches();
+            }
+        }
+
+        // Charger les fiches dès le chargement de la page
+        chargerFiches();
+    </script>
+</body>
+</html>
